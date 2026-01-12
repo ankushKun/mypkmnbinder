@@ -1,5 +1,6 @@
 import HTMLFlipBook from 'react-pageflip';
 import React, { useState, useRef, useCallback, useEffect, type KeyboardEvent, type TouchEvent } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 import { type PokemonCard, type CardSlot } from './types';
 import { Page } from './components/page';
 import { AddCardModal } from './components/add-card-modal';
@@ -24,36 +25,25 @@ export default function App() {
     const totalSlots = 72; // 8 pages x 9 cards each
     const cardsPerPage = 9;
 
-    const [slots, setSlots] = useState<CardSlot[]>(() => {
-        const saved = localStorage.getItem('binder-slots');
-        if (saved) {
-            try {
-                return JSON.parse(saved);
-            } catch (e) {
-                console.error('Failed to parse binder slots', e);
-            }
-        }
-        return Array.from({ length: totalSlots }, (_, i) => ({
+    const [slots, setSlots] = useLocalStorage<CardSlot[]>('binder-slots', () => {
+        const initialSlots = Array.from({ length: totalSlots }, (_, i) => ({
             id: `slot-${i}`,
-            card: null,
+            card: null as PokemonCard | null,
         }));
-    });
 
-    const [editingCards, setEditingCards] = useState<boolean>(() => {
-        const saved = localStorage.getItem('binder-editing-cards');
-        if (saved) {
-            try {
-                return JSON.parse(saved);
-            } catch (e) {
-                console.error('Failed to parse binder editing cards', e);
-            }
+        // Add default Charizard at slot 4 (Center of first page)
+        if (initialSlots[4]) {
+            initialSlots[4].card = {
+                id: "base1-4",
+                imageUrl: "https://assets.tcgdex.net/en/base/base1/4/low.png",
+                name: "Charizard"
+            };
         }
-        return true;
+
+        return initialSlots;
     });
 
-    useEffect(() => {
-        localStorage.setItem('binder-slots', JSON.stringify(slots));
-    }, [slots]);
+    const [editingCards, setEditingCards] = useLocalStorage<boolean>('binder-editing-cards', true);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -206,7 +196,7 @@ export default function App() {
         >
 
             <button
-                onClick={() => { setEditingCards(!editingCards); localStorage.setItem("binder-editing-cards", JSON.stringify(!editingCards)) }}
+                onClick={() => setEditingCards(!editingCards)}
                 className={cn('absolute right-4 top-4 backdrop-blur p-2 rounded-full hover:bg-white/30 cursor-pointer', editingCards ? 'bg-green-300/20' : 'bg-white/20')}>
                 {editingCards ? <Check className='w-4 h-4 text-green-400' /> : <Edit className='w-4 h-4 text-white' />}
             </button>

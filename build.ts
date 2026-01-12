@@ -24,12 +24,25 @@ Example:
 
 console.log("\nStarting build process...\n");
 
-const outdir = process.argv.find(a => a.startsWith("--outdir="))?.split("=")[1] 
+const outdir = process.argv.find(a => a.startsWith("--outdir="))?.split("=")[1]
     ?? path.join(process.cwd(), "dist");
 
 if (existsSync(outdir)) {
     console.log(`Cleaning previous build at ${outdir}`);
     await rm(outdir, { recursive: true, force: true });
+}
+
+// Copy public directory contents
+const publicDir = path.join(process.cwd(), "public");
+if (existsSync(publicDir)) {
+    console.log("Copying public directory to dist...");
+    await Bun.write(path.join(outdir, ".keep"), ""); // Ensure dir exists
+    // Using cp -r behavior via system call or recursive read/write? 
+    // Bun doesn't have a simple recursive copy in one line in standard lib yet? 
+    // Actually, let's use the shell cp command or node fs.cp
+    // Node fs.cp is available in Bun via 'node:fs/promises'
+    const { cp } = await import("node:fs/promises");
+    await cp(publicDir, outdir, { recursive: true });
 }
 
 const start = performance.now();

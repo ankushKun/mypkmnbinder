@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useLocalStorage } from 'usehooks-ts';
 import type { PokemonCard } from '../types';
 
 interface CardDetailModalProps {
@@ -18,17 +19,7 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
     const [isRendered, setIsRendered] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
     const [isHighResLoaded, setIsHighResLoaded] = useState(false);
-    const [editing, _] = useState<boolean>(() => {
-        const saved = localStorage.getItem('binder-editing-cards');
-        if (saved) {
-            try {
-                return JSON.parse(saved);
-            } catch (e) {
-                console.error('Failed to parse binder editing cards', e);
-            }
-        }
-        return true;
-    })
+    const [editing] = useLocalStorage<boolean>('binder-editing-cards', true);
 
     const highResUrl = useMemo(() => {
         if (!card) return '';
