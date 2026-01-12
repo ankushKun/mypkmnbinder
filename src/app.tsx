@@ -1,5 +1,5 @@
 import HTMLFlipBook from 'react-pageflip';
-import React, { useState, useRef, useCallback, useEffect, type KeyboardEvent } from 'react';
+import React, { useState, useRef, useCallback, useEffect, type KeyboardEvent, type TouchEvent } from 'react';
 import { type PokemonCard, type CardSlot } from './types';
 import { Page } from './components/page';
 import { AddCardModal } from './components/add-card-modal';
@@ -73,6 +73,29 @@ export default function App() {
     const [flyoutActive, setFlyoutActive] = useState(false);
     const [flyoutDirection, setFlyoutDirection] = useState<'out' | 'in'>('out');
     const [flyoutRect, setFlyoutRect] = useState<DOMRect | null>(null);
+
+    // Binder translation state
+    const [binderX, setBinderX] = useState(-145);
+    const dragStartRef = useRef<number | null>(null);
+    const startBinderXRef = useRef<number>(-145);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const handleTouchStart = useCallback((e: TouchEvent) => {
+        if (e.target !== containerRef.current) return;
+        dragStartRef.current = e.touches[0]!.clientX;
+        startBinderXRef.current = binderX;
+    }, [binderX]);
+
+    const handleTouchMove = useCallback((e: TouchEvent) => {
+        if (dragStartRef.current === null) return;
+        const delta = e.touches[0]!.clientX - dragStartRef.current;
+        const newX = Math.max(-145, Math.min(145, startBinderXRef.current + delta));
+        setBinderX(newX);
+    }, []);
+
+    const handleTouchEnd = useCallback(() => {
+        dragStartRef.current = null;
+    }, []);
 
     const handleSlotClick = useCallback((index: number) => {
         setSelectedSlotIndex(index);
@@ -169,7 +192,13 @@ export default function App() {
     const prevPage = () => bookRef.current?.pageFlip().flipPrev();
 
     return (
-        <div className="w-screen h-screen max-w-[100vw] max-h-screen flex items-center justify-center relative p-28 overflow-clip">
+        <div
+            ref={containerRef}
+            className="w-screen h-screen max-w-[100vw] max-h-screen flex items-center justify-center relative p-28 overflow-clip touch-none"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+        >
             {/* Previous Button */}
             {/* <button
                 className="absolute top-1/2 -translate-y-1/2 left-5 md:left-2.5 sm:left-1.5 w-12 h-12 md:w-10 md:h-10 sm:w-9 sm:h-9 border-none rounded-full bg-white/10 text-white/70 text-3xl md:text-2xl sm:text-xl cursor-pointer transition-all duration-200 z-50 flex items-center justify-center backdrop-blur-lg hover:bg-white/20 hover:text-white hover:scale-110"
@@ -196,8 +225,8 @@ export default function App() {
                 maxHeight={1000}
                 showCover={true}
                 autoSize={true}
-                className="max-w-[calc(100vw-160px)] md:max-w-[calc(100vw-100px)] sm:max-w-[calc(100vw-80px)] max-h-[calc(100vh-40px)] drop-shadow-2xl .-translate-x-[145px] -translate-x-[145px]"
-                style={{}}
+                className="max-w-[calc(100vw-160px)] md:max-w-[calc(100vw-100px)] sm:max-w-[calc(100vw-80px)] max-h-[calc(100vh-40px)] drop-shadow-2xl"
+                style={{ transform: `translateX(${binderX}px)` }}
                 startPage={0}
                 drawShadow={true}
                 flippingTime={500}
