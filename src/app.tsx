@@ -75,7 +75,7 @@ export default function App() {
     const [flyoutRect, setFlyoutRect] = useState<DOMRect | null>(null);
 
     // Binder translation state
-    const [binderX, setBinderX] = useState(-145);
+    const [binderX, setBinderX] = useState(() => (typeof window !== 'undefined' && window.innerWidth >= 640 ? 0 : -145));
     const dragStartRef = useRef<number | null>(null);
     const startBinderXRef = useRef<number>(-145);
     const containerRef = useRef<HTMLDivElement>(null);
