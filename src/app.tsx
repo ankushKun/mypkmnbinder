@@ -1,5 +1,5 @@
 import HTMLFlipBook from 'react-pageflip';
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, useEffect, type KeyboardEvent } from 'react';
 import { type PokemonCard, type CardSlot } from './types';
 import { Page } from './components/page';
 import { AddCardModal } from './components/add-card-modal';
@@ -58,9 +58,9 @@ export default function App() {
     useEffect(() => {
         const timer = setTimeout(() => {
             if (bookRef.current) {
-                bookRef.current.pageFlip().flip(1);
+                nextPage()
             }
-        }, 600);
+        }, 500);
         return () => clearTimeout(timer);
     }, []);
 
@@ -140,6 +140,25 @@ export default function App() {
         setSelectedSlotIndex(null);
     }, []);
 
+    useEffect(() => {
+        function keydown(e: globalThis.KeyboardEvent) {
+            // Don't trigger if user is typing in an input
+            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+            if (e.key === 'ArrowRight') {
+                bookRef.current?.pageFlip().flipNext();
+            } else if (e.key === 'ArrowLeft') {
+                bookRef.current?.pageFlip().flipPrev();
+            }
+        }
+
+        // bind arrow keys to next and prev page flips
+        window.addEventListener("keydown", keydown)
+        return () => {
+            window.removeEventListener("keydown", keydown)
+        }
+    }, [])
+
     // Split slots into pages
     const pages: CardSlot[][] = [];
     for (let i = 0; i < slots.length; i += cardsPerPage) {
@@ -150,7 +169,7 @@ export default function App() {
     const prevPage = () => bookRef.current?.pageFlip().flipPrev();
 
     return (
-        <div className="w-screen h-screen max-w-[100vw] max-h-[100vh] flex items-center justify-center relative p-28 overflow-clip">
+        <div className="w-screen h-screen max-w-[100vw] max-h-screen flex items-center justify-center relative p-28 overflow-clip">
             {/* Previous Button */}
             {/* <button
                 className="absolute top-1/2 -translate-y-1/2 left-5 md:left-2.5 sm:left-1.5 w-12 h-12 md:w-10 md:h-10 sm:w-9 sm:h-9 border-none rounded-full bg-white/10 text-white/70 text-3xl md:text-2xl sm:text-xl cursor-pointer transition-all duration-200 z-50 flex items-center justify-center backdrop-blur-lg hover:bg-white/20 hover:text-white hover:scale-110"
@@ -161,7 +180,7 @@ export default function App() {
             </button> */}
 
             <button
-                onClick={() => setEditingCards(!editingCards)}
+                onClick={() => { setEditingCards(!editingCards); localStorage.setItem("binder-editing-cards", JSON.stringify(!editingCards)) }}
                 className={cn('absolute right-4 top-4 backdrop-blur p-2 rounded-full hover:bg-white/30 cursor-pointer', editingCards ? 'bg-green-300/20' : 'bg-white/20')}>
                 {editingCards ? <Check className='w-4 h-4 text-green-400' /> : <Edit className='w-4 h-4 text-white' />}
             </button>
@@ -177,7 +196,7 @@ export default function App() {
                 maxHeight={1000}
                 showCover={true}
                 autoSize={true}
-                className="max-w-[calc(100vw-160px)] md:max-w-[calc(100vw-100px)] sm:max-w-[calc(100vw-80px)] max-h-[calc(100vh-40px)] drop-shadow-2xl p-6"
+                className="max-w-[calc(100vw-160px)] md:max-w-[calc(100vw-100px)] sm:max-w-[calc(100vw-80px)] max-h-[calc(100vh-40px)] drop-shadow-2xl .-translate-x-[145px] -translate-x-[145px]"
                 style={{}}
                 startPage={0}
                 drawShadow={true}
@@ -193,7 +212,7 @@ export default function App() {
                 disableFlipByClick={true}
             >
                 {/* Front Cover */}
-                <Page className={cn("bg-linear-to-br relative overflow-hidden rounded-r-2xl rounded-l-sm", AVAILABLE_COLORS.yellow.class)}>
+                <Page className={cn("bg-linear-to-br overflow-hidden rounded-r-2xl rounded-l-sm", AVAILABLE_COLORS.yellow.class)}>
                     <div className="cover-texture" />
                     <div className="cover-stitching rounded-r-xl rounded-l-md" />
                     <input
