@@ -7,7 +7,7 @@ import { CardDetailModal } from './components/card-detail-modal';
 import { CardFlyout } from './components/card-flyout';
 import { EmptySlot } from './components/empty-slot';
 import { FilledSlot } from './components/filled-slot';
-import { Check, Edit } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Circle, Edit } from 'lucide-react';
 import { cn } from './lib';
 
 const AVAILABLE_COLORS = {
@@ -81,7 +81,12 @@ export default function App() {
     const containerRef = useRef<HTMLDivElement>(null);
 
     const handleTouchStart = useCallback((e: TouchEvent) => {
-        if (e.target !== containerRef.current) return;
+        const target = e.target as HTMLElement;
+        const isContainer = target === containerRef.current;
+        const isHandle = target.classList.contains('binder-drag-handle');
+
+        if (!isContainer && !isHandle) return;
+
         dragStartRef.current = e.touches[0]!.clientX;
         startBinderXRef.current = binderX;
     }, [binderX]);
@@ -199,14 +204,6 @@ export default function App() {
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
         >
-            {/* Previous Button */}
-            {/* <button
-                className="absolute top-1/2 -translate-y-1/2 left-5 md:left-2.5 sm:left-1.5 w-12 h-12 md:w-10 md:h-10 sm:w-9 sm:h-9 border-none rounded-full bg-white/10 text-white/70 text-3xl md:text-2xl sm:text-xl cursor-pointer transition-all duration-200 z-50 flex items-center justify-center backdrop-blur-lg hover:bg-white/20 hover:text-white hover:scale-110"
-                onClick={prevPage}
-                aria-label="Previous page"
-            >
-                ‹
-            </button> */}
 
             <button
                 onClick={() => { setEditingCards(!editingCards); localStorage.setItem("binder-editing-cards", JSON.stringify(!editingCards)) }}
@@ -254,6 +251,13 @@ export default function App() {
                 {/* Inside Front Cover */}
                 <Page className="bg-neutral-900 rounded-l-2xl relative">
                     <div className="page-texture" />
+                    {/* Spine Handle (Right edge for Left page) */}
+                    <div
+                        className="binder-drag-handle absolute top-0 right-0 w-8 h-full z-50 cursor-grab active:cursor-grabbing touch-none"
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                    />
                 </Page>
 
                 {/* Card Pages */}
@@ -263,6 +267,16 @@ export default function App() {
                         className={`bg-neutral-900 border-black/5 ${pageIndex % 2 === 0 ? 'rounded-r-2xl border-l' : 'rounded-l-2xl border-r'} relative`}
                     >
                         <div className="page-texture" />
+                        {/* Spine Handle */}
+                        <div
+                            className={cn(
+                                "binder-drag-handle absolute top-0 w-8 h-full z-50 cursor-grab active:cursor-grabbing touch-none",
+                                pageIndex % 2 === 0 ? "left-0" : "right-0"
+                            )}
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
+                        />
                         <div className="w-full h-full grid grid-cols-3 grid-rows-3  relative z-10 items-start justify-evenly gap-4 gap-x-0 p-4 px-4 m-0">
                             {pageSlots.map((slot, slotIndex) => {
                                 const globalIndex = pageIndex * cardsPerPage + slotIndex;
@@ -275,13 +289,11 @@ export default function App() {
                                         isHidden={detailSlotIndex === globalIndex && (flyoutActive || detailModalOpen)}
                                     />
                                 ) : (
-                                    <>
-                                        <EmptySlot
-                                            key={slot.id}
-                                            onClick={() => handleSlotClick(globalIndex)}
-                                            addable={editingCards}
-                                        />
-                                    </>
+                                    <EmptySlot
+                                        key={slot.id}
+                                        onClick={() => handleSlotClick(globalIndex)}
+                                        addable={editingCards}
+                                    />
                                 );
                             })}
                         </div>
@@ -291,6 +303,13 @@ export default function App() {
                 {/* Inside Back Cover */}
                 <Page className="bg-neutral-900 rounded-r-2xl relative">
                     <div className="page-texture" />
+                    {/* Spine Handle (Left edge for Right page) */}
+                    <div
+                        className="binder-drag-handle absolute top-0 left-0 w-8 h-full z-50 cursor-grab active:cursor-grabbing touch-none"
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                    />
                 </Page>
 
                 {/* Back Cover */}
@@ -300,14 +319,7 @@ export default function App() {
                 </Page>
             </HTMLFlipBook>
 
-            {/* Next Button */}
-            {/* <button
-                className="absolute top-1/2 -translate-y-1/2 right-5 md:right-2.5 sm:right-1.5 w-12 h-12 md:w-10 md:h-10 sm:w-9 sm:h-9 border-none rounded-full bg-white/10 text-white/70 text-3xl md:text-2xl sm:text-xl cursor-pointer transition-all duration-200 z-50 flex items-center justify-center backdrop-blur-lg hover:bg-white/20 hover:text-white hover:scale-110"
-                onClick={nextPage}
-                aria-label="Next page"
-            >
-                ›
-            </button> */}
+            {binderX == -145 && <div className='absolute sm:invisible bottom-20 text-white flex items-center justify-center gap-4 font-light text-sm opacity-25 pointer-events-none'><ArrowLeft strokeWidth={1} />slide here<ArrowRight strokeWidth={1} /></div>}
 
             <AddCardModal
                 isOpen={modalOpen}

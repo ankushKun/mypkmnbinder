@@ -18,6 +18,17 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
     const [isRendered, setIsRendered] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
     const [isHighResLoaded, setIsHighResLoaded] = useState(false);
+    const [editing, _] = useState<boolean>(() => {
+        const saved = localStorage.getItem('binder-editing-cards');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error('Failed to parse binder editing cards', e);
+            }
+        }
+        return true;
+    })
 
     const highResUrl = useMemo(() => {
         if (!card) return '';
@@ -136,7 +147,7 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
                 </div>
 
                 {/* Remove button */}
-                <div className="p-4 border-t border-white/10">
+                {editing && <div className="p-4 border-t border-white/10">
                     <button
                         onClick={handleRemove}
                         className="w-full py-3 px-4 rounded-xl bg-red-500/20 text-red-400 font-medium hover:bg-red-500/30 hover:text-red-300 transition-all duration-200 flex items-center justify-center gap-2"
@@ -157,7 +168,7 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
                         </svg>
                         Remove from Binder
                     </button>
-                </div>
+                </div>}
             </div>
         </div>
     );
