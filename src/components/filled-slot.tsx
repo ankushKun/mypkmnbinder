@@ -28,7 +28,6 @@ export const FilledSlot: React.FC<FilledSlotProps> = ({ card, onRemove, onClick,
             <img
                 src={card.imageUrl}
                 alt={card.name}
-                loading='lazy'
                 className={`w-full h-full object-cover block drop-shadow-md transition-opacity duration-200 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
                 onLoad={() => setIsLoading(false)}
                 onError={() => setIsLoading(false)}

@@ -17,7 +17,6 @@ const SearchResultItem: React.FC<{ card: any; onClick: (card: any) => void }> = 
                 <img
                     src={imgSrc}
                     alt={card.name}
-                    loading="lazy"
                     className={`w-full h-full object-cover transition-opacity duration-200 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
                     onLoad={() => setIsLoading(false)}
                     onError={() => setIsLoading(false)}
@@ -184,7 +183,7 @@ export const AddCardModal: React.FC<AddCardModalProps> = ({ isOpen, onClose, onA
 
                 {/* Tabs */}
                 <div className="flex border-b border-white/10 px-4 pt-4">
-                    {(['search', 'url', 'upload'] as const).map((tab) => (
+                    {(['search', 'url'] as const).map((tab) => (
                         <button
                             key={tab}
                             className={`px-6 py-3 border-none bg-transparent text-sm font-semibold cursor-pointer transition-all duration-200 relative capitalize

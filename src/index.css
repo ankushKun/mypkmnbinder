@@ -39,28 +39,52 @@ body {
 }
 
 /* Cover texture pattern - complex gradient that needs CSS */
+/* Cover texture pattern - Leather Grain */
 .cover-texture {
     position: absolute;
     inset: 0;
+    /* Leather grain effect using radial gradients */
     background-image:
-        repeating-linear-gradient(90deg,
-            transparent,
-            transparent 1px,
-            rgba(0, 0, 0, 0.03) 1px,
-            rgba(0, 0, 0, 0.03) 2px),
-        repeating-linear-gradient(0deg,
-            transparent,
-            transparent 1px,
-            rgba(0, 0, 0, 0.03) 1px,
-            rgba(0, 0, 0, 0.03) 2px);
-    background-size: 3px 3px;
+        /* Uneven lighting/wear */
+        radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 30%),
+        radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.2) 0%, transparent 40%),
+        /* Fine pebbled grain */
+        radial-gradient(rgba(0, 0, 0, 0.2) 15%, transparent 16%),
+        radial-gradient(rgba(0, 0, 0, 0.2) 15%, transparent 16%);
+    background-size: 100% 100%, 100% 100%, 3px 3px, 3px 3px;
+    background-position: 0 0, 0 0, 0 0, 1.5px 1.5px;
+    /* filter: contrast(100%); */
+    opacity: 1;
+    mix-blend-mode: overlay;
+    pointer-events: none;
 }
 
-.cover-texture::after {
-    content: '';
+/* Sewing lines / Stitching */
+.cover-stitching {
+    position: absolute;
+    inset: 26px;
+    border: 2px dashed rgba(255, 255, 255, 0.5);
+    box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+}
+
+/* Inside page texture - faint carbon fiber style */
+.page-texture {
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    background-image:
+        repeating-linear-gradient(45deg,
+            rgba(255, 255, 255, 0.03) 0px,
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px,
+            transparent 3px),
+        repeating-linear-gradient(-45deg,
+            rgba(255, 255, 255, 0.03) 0px,
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px,
+            transparent 3px);
+    background-size: 4px 4px;
+    pointer-events: none;
 }
 
 /* Filled card shine overlay */
