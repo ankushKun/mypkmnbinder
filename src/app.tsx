@@ -1,5 +1,5 @@
 import HTMLFlipBook from 'react-pageflip';
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { type PokemonCard, type CardSlot } from './types';
 import { Page } from './components/page';
 import { AddCardModal } from './components/add-card-modal';
@@ -7,18 +7,40 @@ import { CardDetailModal } from './components/card-detail-modal';
 import { CardFlyout } from './components/card-flyout';
 import { EmptySlot } from './components/empty-slot';
 import { FilledSlot } from './components/filled-slot';
+import { Edit } from 'lucide-react';
 
 export default function App() {
     const bookRef = useRef<any>(null);
     const totalSlots = 72; // 8 pages x 9 cards each
     const cardsPerPage = 9;
 
-    const [slots, setSlots] = useState<CardSlot[]>(() =>
-        Array.from({ length: totalSlots }, (_, i) => ({
+    const [slots, setSlots] = useState<CardSlot[]>(() => {
+        const saved = localStorage.getItem('binder-slots');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error('Failed to parse binder slots', e);
+            }
+        }
+        return Array.from({ length: totalSlots }, (_, i) => ({
             id: `slot-${i}`,
             card: null,
-        }))
-    );
+        }));
+    });
+
+    useEffect(() => {
+        localStorage.setItem('binder-slots', JSON.stringify(slots));
+    }, [slots]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (bookRef.current) {
+                bookRef.current.pageFlip().flip(1);
+            }
+        }, 600);
+        return () => clearTimeout(timer);
+    }, []);
 
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedSlotIndex, setSelectedSlotIndex] = useState<number | null>(null);
@@ -115,6 +137,10 @@ export default function App() {
             >
                 ‹
             </button> */}
+
+            <button className='absolute left-2 top-2 bg-white/20 backdrop-blur p-2 rounded-full hover:bg-white/30 cursor-pointer'>
+                <Edit className='w-4 h-4 text-white' />
+            </button>
 
             <HTMLFlipBook
                 ref={bookRef}

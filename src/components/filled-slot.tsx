@@ -22,7 +22,7 @@ export const FilledSlot: React.FC<FilledSlotProps> = ({ card, onRemove, onClick,
     return (
         <div
             ref={containerRef}
-            className={`card-aspect h-full cursor-pointer w-auto max-w-full justify-self-center relative rounded overflow-hidden bg-card-placeholder card-shine shadow-lg group ${isHidden ? 'invisible' : ''}`}
+            className={`card-aspect h-full cursor-pointer w-auto max-w-full justify-self-center relative rounded-lg overflow-hidden bg-card-placeholder card-shine shadow-lg group ${isHidden ? 'invisible' : ''}`}
             onClick={handleClick}
         >
             <img

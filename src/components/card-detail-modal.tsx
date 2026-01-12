@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import type { PokemonCard } from '../types';
 
 interface CardDetailModalProps {
@@ -9,26 +9,47 @@ interface CardDetailModalProps {
 }
 
 export const CardDetailModal: React.FC<CardDetailModalProps> = ({
-    card,
+    card: propCard,
     isOpen,
     onClose,
     onRemove,
 }) => {
-    const [isAnimatingIn, setIsAnimatingIn] = useState(false);
+    const [card, setCard] = useState(propCard);
+    const [isRendered, setIsRendered] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
+    const [isHighResLoaded, setIsHighResLoaded] = useState(false);
+
+    const highResUrl = useMemo(() => {
+        if (!card) return '';
+        return card.imageUrl.replace(/\/low\.(png|webp)$/, '/high.$1');
+    }, [card]);
+
+    useEffect(() => {
+        setIsHighResLoaded(false);
+    }, [card]);
+
+    useEffect(() => {
+        if (propCard) setCard(propCard);
+    }, [propCard]);
 
     useEffect(() => {
         if (isOpen) {
+            setIsRendered(true);
             // Small delay to ensure the slide-out animation on the card starts first
             const timer = setTimeout(() => {
-                setIsAnimatingIn(true);
+                setIsVisible(true);
             }, 150);
             return () => clearTimeout(timer);
         } else {
-            setIsAnimatingIn(false);
+            setIsVisible(false);
+            const timer = setTimeout(() => {
+                setIsRendered(false);
+            }, 500);
+            return () => clearTimeout(timer);
         }
     }, [isOpen]);
 
-    if (!isOpen || !card) return null;
+    if ((!isOpen && !isRendered) || !card) return null;
 
     const handleBackdropClick = (e: React.MouseEvent) => {
         if (e.target === e.currentTarget) {
@@ -43,15 +64,13 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
     return (
         <div
-            className={`fixed inset-0 bg-black/80 backdrop-blur-lg z-[1000] flex items-center justify-center p-5 transition-opacity duration-300 ${
-                isAnimatingIn ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`fixed inset-0 bg-black/80 backdrop-blur-lg z-[1000] flex items-center justify-center p-5 transition-opacity duration-300 ${isVisible ? 'opacity-100' : 'opacity-0'
+                }`}
             onClick={handleBackdropClick}
         >
             <div
-                className={`bg-[#1e1e2e] rounded-2xl border border-white/10 shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden transform transition-transform duration-500 ease-out ${
-                    isAnimatingIn ? 'translate-y-0' : '-translate-y-full'
-                }`}
+                className={`bg-[#1e1e2e] rounded-2xl border border-white/10 shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden transform transition-transform duration-500 ease-out ${isVisible ? 'translate-y-0' : '-translate-y-full'
+                    }`}
             >
                 {/* Header with close button */}
                 <div className="flex items-center justify-between p-4 border-b border-white/10">
@@ -79,11 +98,19 @@ export const CardDetailModal: React.FC<CardDetailModalProps> = ({
 
                 {/* Card image */}
                 <div className="p-6 flex justify-center">
-                    <div className="card-aspect w-64 max-w-full rounded-lg overflow-hidden shadow-2xl card-shine">
+                    <div className="card-aspect w-64 max-w-full rounded-lg overflow-hidden shadow-2xl card-shine relative">
                         <img
                             src={card.imageUrl}
                             alt={card.name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover absolute inset-0"
+                            aria-hidden="true"
+                        />
+                        <img
+                            src={highResUrl}
+                            alt={card.name}
+                            className={`w-full h-full object-cover absolute inset-0 transition-opacity duration-300 ${isHighResLoaded ? 'opacity-100' : 'opacity-0'
+                                }`}
+                            onLoad={() => setIsHighResLoaded(true)}
                         />
                     </div>
                 </div>

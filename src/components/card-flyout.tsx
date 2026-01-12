@@ -69,7 +69,7 @@ export const CardFlyout: React.FC<CardFlyoutProps> = ({
     // For "out": start at position, end off screen
     // For "in": start off screen, end at position
     const isAnimating = animationPhase === 'animating';
-    
+
     let transform: string;
     let opacity: number;
 
@@ -84,7 +84,7 @@ export const CardFlyout: React.FC<CardFlyoutProps> = ({
 
     return (
         <div
-            className="fixed pointer-events-none z-[999] card-shine rounded overflow-hidden shadow-2xl"
+            className="fixed pointer-events-none z-[999] card-shine rounded-lg overflow-hidden shadow-2xl"
             style={{
                 left: currentRect.left,
                 top: currentRect.top,
